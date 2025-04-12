@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Animal Service</title>
+
+    <style>
+       
+       body {
+          /* Apply global font */
+          font-family: 'Times New Roman', serif !important;
+       }
+
+       .text-center.mb-4 {
+           /* Add padding to the header */
+           padding: 1rem; 
+       }
+
+       .table-container {
+          display: flex;
+          /* Horizontally center the Table*/
+          justify-content: center;
+          /* Vertically center the Table*/
+          align-items: center;
+          padding: 3rem;
+        }
+        
+        .view-all-btn-container {
+            display: flex;
+            flex-direction: column;
+            /* Sets button at the bottom of the div*/
+            justify-content: flex-end;
+            /* Horizontally centers the button*/
+            align-items: center;
+            /* height of flex container*/
+            height : 100px;
+        }
+
+    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header Section -->
+      <div class="text-center mb-4">
+        <h1>Animal Service</h1>
+      </div>
+
+    <div class="container">
+      <div class="row">
+        <!-- Search Section -->
+        <div class="col-md-3">
+          <h2>Search</h2>
+          <input type="search" id="searchAnimal" placeholder="Search animal by id...">
+          <button onclick="getAnimalId()">Search</button>
+        </div>
+    
+        <!-- Add Animal Section -->
+        <div class="col-md-3">
+          <h2>Add An Animal</h2>
+          <input type="text" id="animalNameInput" placeholder="Enter animal name..." onkeypress="return /[a-zA-Z]/.test(event.key)">
+          <br>
+          <input type="text" id="animalHabitatInput" placeholder="Enter animal habitat..." onkeypress="return /[a-zA-Z]/.test(event.key)">
+          <button onclick="sendAnimalData()">Add Animal</button>
+        </div>
+    
+        <!-- Remove Animal Section -->
+        <div class="col-md-3">
+          <h2>Remove An Animal</h2>
+          <input type="text" id="deleteAnimalInput" placeholder="Animal id to delete...">
+          <button onclick="deleteAnimalData()">Delete Animal</button>
+        </div>
+        
+        <!-- View All Animals Section -->
+        <div class="col-md-3 view-all-btn-container">
+          <button onclick="getAnimals()">View All Animals</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- View Animals Table -->
+    <div class="table-container" id="resultsAnchor">
+    </div>
+
+    <!--Error Alerts View -->
+    <div id="errorAnchor" class="text-danger text-center mt-3">
+    </div>
+
+    <!-- Confirmation Alerts View -->
+    <div id="alertAnchor" class="text-success text-center mt-3">
+    </div>
+  </body>
+  <script>
+    
+    // Function to display error messages
+    function displayError(message) {
+      const errorDiv = document.getElementById('errorAnchor');
+      if(message != null)
+      {
+        errorDiv.textContent = message;
+        // Clear the error after 3 seconds
+        setTimeout(() => {
+        errorDiv.textContent = '';
+        }, 3000);
+      }
+    }
+
+    // Function to display confirmation messages
+    function displayConfirmation(message) {
+      const alertDiv = document.getElementById('alertAnchor');
+      if(message != null)
+      {
+        alertDiv.textContent = message;
+        // Clear the error after 3 seconds
+        setTimeout(() => {
+        alertDiv.textContent = '';
+        }, 3000);
+      }
+    }
+    
+    // Function to keep the user input boxes empty after submitting something
+    function clearAllInputs()
+    {
+      document.getElementById('searchAnimal').value = '';
+      document.getElementById('deleteAnimalInput').value = '';
+      document.getElementById('animalNameInput').value = '';
+      document.getElementById('animalHabitatInput').value = '';
+    }
+
+    // Function to create the table to display animal/habitat data
+    function createAnimalTable(arr){
+      // make the table and add it to the DOM
+      let table = document.createElement("TABLE");
+      table.setAttribute("id", "animalFactsTable");
+      // Add the 'table-striped' class for alternating row colors
+      table.setAttribute("class", "table table-bordered table-striped");
+      document.getElementById("resultsAnchor").appendChild(table);
+
+      // Create the table header element
+      let thead = document.createElement("THEAD");
+      table.appendChild(thead);
+
+      //add the table headers
+      let headerRow = document.createElement("TR");
+      let animalIdHeaderCell = document.createElement("TH");
+      let animalNameHeaderCell = document.createElement("TH");
+      let animalHabitatHeaderCell = document.createElement("TH");
+
+      // fill the table headers
+      animalIdHeaderCell.textContent = "Animal ID";
+      animalNameHeaderCell.textContent = "Animal Name";
+      animalHabitatHeaderCell.textContent = "Animal Habitat";
+
+      // append the table headers to the header row
+      headerRow.appendChild(animalIdHeaderCell);
+      headerRow.appendChild(animalNameHeaderCell);
+      headerRow.appendChild(animalHabitatHeaderCell);
+      // Append the header row to the thead
+      thead.appendChild(headerRow);
+
+      // Create the table body element
+      let tbody = document.createElement("TBODY");
+      table.appendChild(tbody);
+
+      //add the table data based on how many animals we have
+      for(const animal of arr){
+        let dataRow = document.createElement("TR");
+        let animalIdDataCell = document.createElement("TD");
+        let animalNameDataCell = document.createElement("TD");
+        let animalHabitatDataCell = document.createElement("TD");
+
+        animalIdDataCell.textContent = animal.Id;
+        animalNameDataCell.textContent = animal.Species;
+        animalHabitatDataCell.textContent = animal.Habitat;
+
+        dataRow.appendChild(animalIdDataCell);
+        dataRow.appendChild(animalNameDataCell);
+        dataRow.appendChild(animalHabitatDataCell);
+        // Append the data row to the tbody
+        tbody.appendChild(dataRow);
+      }
+    }
+
+    // Function to remove table object from the DOM
+    function clearPageIfNeeded() {
+      //check if there is already a table present
+      if(document.getElementById("animalFactsTable") != null)
+      {
+        let div = document.getElementById("resultsAnchor");
+        // remove table that is already present
+        div.removeChild(div.firstElementChild);
+      }
+    }
+
+
+        // Function to send an http request to delete an animal from the database
+    async function deleteAnimalData() {
+      // get the user input
+      let Id = parseInt(document.getElementById("deleteAnimalInput").value);
+
+      // send the animal id 
+      const response = await fetch("http://localhost:8080/animal", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(Id)
+      });
+
+      if (response.ok) {
+        displayConfirmation("Animal Deleted Successfully");
+      }
+      else
+      {
+        displayError("Error: Animal not deleted!");
+      }
+
+      clearAllInputs();
+    }
+
+    // Function to send an http request to add an animal to the database
+    async function sendAnimalData() {
+      // get the user input
+      let Species = document.getElementById("animalNameInput").value;
+      let Habitat = document.getElementById("animalHabitatInput").value;
+
+      // Check for empty values
+      if (!Species.trim() || !Habitat.trim()) {
+        displayError("Please enter both animal name and habitat");
+        return;
+      }
+
+      // send the species/habitat data
+      const response = await fetch("http://localhost:8080/animals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({Id: 0, Species, Habitat})
+      });
+
+      if (response.ok) {
+        displayConfirmation("Animal Added Successfully");
+      }
+      else
+      {
+        displayError("Error: Failed to add animal!");
+      }
+
+      clearAllInputs();
+    }
+
+    // Function to send an http request to display an animal based on an id 
+    async function getAnimalId() {
+      clearPageIfNeeded();
+
+      // get the user input for animal id
+      const animalId = document.getElementById("searchAnimal").value;
+
+      // use a rest api to send the animalId
+      const response = await fetch(`http://localhost:8080/animal/${animalId}`);
+
+      if (response.ok) {
+        const animal = await response.json();
+        createAnimalTable([animal]);
+      }
+      else
+      {
+        displayError("Error: Animal ID not found...try again!");
+      }
+
+      clearAllInputs();
+    }
+
+    // Function to send an http request to display all animals from the database
+    async function getAnimals() {
+      // clear any text in the search field
+      clearPageIfNeeded();
+      document.getElementById('searchAnimal').value = '';
+
+      // use a rest api to send the animals
+      const response = await fetch('http://localhost:8080/animals');
+
+      if (response.ok) {
+        const animals = await response.json();
+        createAnimalTable(animals);
+      }
+      else
+      {
+        displayError("Error: Failed to fetch animals...try again!");
+      }
+    }
+
+    clearAllInputs();
+  </script>
+</html>
